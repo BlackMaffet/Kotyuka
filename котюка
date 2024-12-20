@@ -1,0 +1,90 @@
+import pygame
+import random
+
+pygame.init()
+
+screen_width = 800
+screen_height = 800
+screen = pygame.display.set_mode((screen_width, screen_height))
+
+pygame.display.set_caption("Котюка шерстяная")
+
+blue = (75, 75, 250)
+grassy = (57, 157, 42)
+
+font = pygame.font.SysFont("Arial", 20)
+
+clock = pygame.time.Clock()
+
+cell_size = 20
+kotyuka_speed = 5
+kotyuka_length = 3
+
+kotyuka_body = []
+
+for i in range(kotyuka_length):
+    kotyuka_body.append(pygame.Rect((screen_width / 2) - (cell_size * i), screen_height / 2, cell_size, cell_size))
+ 
+kotyuka_direction = "right"
+new_direction = "right"
+
+objective_position = pygame.Rect(random.randint(0, screen_width - cell_size), random.randint(0, screen_height - cell_size), cell_size, cell_size)
+
+game_over = False 
+
+while not game_over:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_over = True
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP and kotyuka_direction != "down":
+                new_direction = "up"
+            elif event.key == pygame.K_DOWN and kotyuka_direction != "up":
+                new_direction = "down"
+            elif event.key == pygame.K_LEFT and kotyuka_direction != "right":
+                new_direction = "left"
+            elif event.key == pygame.K_RIGHT and kotyuka_direction != "left":
+                new_direction = "right"
+
+    kotyuka_direction = new_direction
+
+    if kotyuka_direction == "up":
+        kotyuka_body.insert(0, pygame.Rect(kotyuka_body[0].left, kotyuka_body[0].top - cell_size, cell_size, cell_size))
+    elif kotyuka_direction ==  "down":
+        kotyuka_body.insert(0, pygame.Rect(kotyuka_body[0].left, kotyuka_body[0].top + cell_size, cell_size, cell_size))
+    elif kotyuka_direction ==  "left":
+        kotyuka_body.insert(0, pygame.Rect(kotyuka_body[0].left - cell_size, kotyuka_body[0].top, cell_size, cell_size))
+    elif kotyuka_direction ==  "right":
+        kotyuka_body.insert(0, pygame.Rect(kotyuka_body[0].left + cell_size, kotyuka_body[0].top, cell_size, cell_size))
+
+    if kotyuka_body[0].colliderect(objective_position):
+        objective_position = pygame.Rect(random.randint(0, screen_width - cell_size), random.randint(0, screen_height - cell_size), cell_size, cell_size)
+        kotyuka_length += 1
+
+    if len(kotyuka_body) > kotyuka_length:
+        kotyuka_body.pop()
+    
+    for i in range(1, len(kotyuka_body)):
+        if kotyuka_body[0].colliderect(kotyuka_body[i]):
+            game_over = True
+
+    screen.fill((0, 0, 0))
+
+    for i in range(len(kotyuka_body)):
+        if i == 0:
+            pygame.draw.circle(screen, (23, 114, 69), kotyuka_body[i].center, cell_size / 2)
+        else:
+            pygame.draw.circle(screen, grassy, kotyuka_body[i].center, cell_size / 2)
+            pygame.draw.circle(screen, (255, 255, 0), kotyuka_body[i].center, cell_size / 4)
+
+    pygame.draw.circle(screen, (128,128,128), objective_position.center, cell_size / 2)
+
+    score_text = font.render(f"Съедено: {kotyuka_length - 3}", True, (255, 255, 255))
+    screen.blit(score_text, (10, 10))
+
+    pygame.display.update()
+
+    clock.tick(kotyuka_speed)
+    
+pygame.quit() 
+         
